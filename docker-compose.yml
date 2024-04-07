@@ -1,72 +1,68 @@
-version: '3.8'
+version: "3.8"
+
+networks:
+  prodcon_network:
+    driver: bridge
+
 services:
   rabbitmq:
     image: rabbitmq:3-management
-    environment:
-      RABBITMQ_DEFAULT_USER: "user"
-      RABBITMQ_DEFAULT_PASS: "password"
+    hostname: rabbitmq
     ports:
-      - "15672:15672"  # Management interface
-      - "5672:5672"    # Application communication
+      - "15672:15672" # For RabbitMQ management interface
+      - "5672:5672" # For RabbitMQ message broker
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 60s
+      retries: 3
     networks:
-      - inventory_network
-
-  mysql:
-    image: mysql:5.7
-    environment:
-      MYSQL_ROOT_PASSWORD: "rootpassword"
-      MYSQL_DATABASE: "inventory_db"
-      MYSQL_USER: "user"
-      MYSQL_PASSWORD: "password"
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - inventory_network
+      - prodcon_network
 
   producer:
-    build: ./producer
+    build: Producer/
+    ports:
+      - "5000:5000" # For Flask server
     depends_on:
-      - rabbitmq
-      - mysql
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
     networks:
-      - inventory_network
+      - prodcon_network
 
-  healthcheck:
-    build: ./healthcheck
+  consumer_health_check:
+    build: Consumer_one/
     depends_on:
-      - rabbitmq
-      - mysql
+      producer:
+        condition: service_started
     networks:
-      - inventory_network
+      - prodcon_network
 
-  item_creation:
-    build: ./item_creation
+  consumer_insert_record:
+    build: Consumer_two/
     depends_on:
-      - rabbitmq
-      - mysql
+      rabbitmq:
+        condition: service_healthy
     networks:
-      - inventory_network
+      - prodcon_network
 
-  stock_management:
-    build: ./stock_management
+  consumer_delete_record:
+    build: Consumer_three/
     depends_on:
-      - rabbitmq
-      - mysql
+      rabbitmq:
+        condition: service_healthy
     networks:
-      - inventory_network
+      - prodcon_network
 
-  order_processing:
-    build: ./order_processing
+  consumer_read_database:
+    build: Consumer_four/
+    command: python3 read_database.py
     depends_on:
-      - rabbitmq
-      - mysql
+      rabbitmq:
+        condition: service_healthy
     networks:
-      - inventory_network
-
-networks:
-  inventory_network:
-
-volumes:
-  mysql_data:
+      - prodcon_network

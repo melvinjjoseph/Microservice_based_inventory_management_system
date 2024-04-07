@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Read Database</title>
+    <!-- Load Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/"><h1>Inventory Management System</h1></a>
+        <h2>Read Database</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Product ID</th>
+                    <th>Units</th>
+                </tr>
+            </thead>
+            <tbody id="records-table-body">
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.product_name }}</td>
+                    <td>{{ record.product_id }}</td>
+                    <td>{{ record.units }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Load Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
