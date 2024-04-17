@@ -66,3 +66,12 @@ services:
         condition: service_healthy
     networks:
       - prodcon_network
+
+  consumer_order:
+    build: Consumer_five/
+    command: python3 order.py
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - prodcon_network

@@ -11,10 +11,10 @@ app = Flask(
 )
 
 # Connect to MongoDB
-client = pymongo.MongoClient('add your mongodb connection string here')
+client = pymongo.MongoClient('mongodb+srv://melvin:melvin123@cluster0.kmverd6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
 db = client["database"]
 collection = db["inventory"]
-
+collection_orders = db["orders"]
 
 # RabbitMQ setup
 try:
@@ -44,6 +44,7 @@ try:
     channel.queue_declare(queue='delete_record', durable=True)
     channel.queue_declare(queue='read_database', durable=True)
     channel.queue_declare(queue='send_database', durable=True)
+    channel.queue_declare(queue='create_order', durable=True)
     print("Queues declared successfully")
 except pika.exceptions.ChannelClosedByBroker as e:
     print("Failed to declare queue: ", e)
@@ -54,6 +55,9 @@ try:
     channel.queue_bind(exchange='microservices', queue='health_check', routing_key='health_check')
     channel.queue_bind(exchange='microservices', queue='insert_record', routing_key='insert_record')
     channel.queue_bind(exchange='microservices', queue='delete_record', routing_key='delete_record')
+    channel.queue_bind(exchange='microservices', queue='read_database', routing_key='read_database')
+    channel.queue_bind(exchange='microservices', queue='create_order', routing_key='create_order')
+
 except pika.exceptions.ChannelClosedByBroker as e:
     print("Failed to bind queue to exchange: ", e)
     sys.exit(1)
@@ -67,16 +71,16 @@ def index():
 @app.route('/health_check', methods=['GET'])
 def health_check():
     #check if the service is up
+    message = 'Health Check message sent!'
+    try:
+        channel.basic_publish(exchange='microservices', routing_key='health_check', body=message)
+    except pika.exceptions.UnroutableError as e:
+        print("Failed to publish message: ", e)
+        return 'Failed to send Health Check message!'
     if connection.is_open:
-        return 'Service is up!'
+        return 'RabbitMQ connection is active. Service is up!'
     else:
-        return 'Service is down!'
-
-    # try:
-    #     channel.basic_publish(exchange='microservices', routing_key='health_check', body=message)
-    # except pika.exceptions.UnroutableError as e:
-    #     print("Failed to publish message: ", e)
-    #     return 'Failed to send Health Check message!'
+        return 'RabbitMQ connection is not active. Service is down!'
     # return 'Health Check message sent!'
 
 # # Insert record endpoint
@@ -112,6 +116,7 @@ def delete_record():
     else:  # GET request
         return render_template('delete.html', message='Enter the product ID to delete the record!')
 
+# Read database endpoint
 @app.route('/read_database', methods=['GET'])
 def read_database():
     try:
@@ -125,6 +130,37 @@ def read_database():
         print("Failed to get message: ", e)
         return jsonify({"error": "Failed to read database!"})
     return render_template('read.html', message='Records retrieved from the database: ', records=records)
+
+# Create order endpoint
+@app.route('/order', methods=['GET', 'POST'])
+def order():
+    if request.method == 'POST':
+        records=list(collection.find())
+        orders = list(collection_orders.find())
+        product_id = request.form['product_id']
+        units = request.form['units']
+        # Check if the product exists in the database
+        if not any(record['product_id'] == product_id for record in records):
+            return render_template('order.html', message='Product does not exist in the inventory!', orders=orders)
+        
+        #Check if the units requested are available
+        for record in records:
+            if record['product_id'] == product_id:
+                if int(record['units']) < int(units):
+                    return render_template('order.html', message='Units requested are not available!', orders=orders)
+
+        message = json.dumps({'product_id': product_id, 'units': units})
+        try:
+            channel.basic_publish(exchange='microservices', routing_key='create_order', body=message)
+        except pika.exceptions.UnroutableError as e:
+            print("Failed to publish message: ", e)
+            return render_template('order.html', message='Failed to create order!', orders=orders)
+    
+        orders = list(collection_orders.find())
+        return render_template('order.html', message='Order Created Successfully!', orders=orders)
+    else:  # GET request
+        orders = list(collection_orders.find())
+        return render_template('order.html', message='Enter the product ID and units to create an order!', orders=orders)
 
 
 if __name__ == '__main__':

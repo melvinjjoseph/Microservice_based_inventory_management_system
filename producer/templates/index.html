@@ -22,6 +22,12 @@
     <a href="/"><h1>Inventory Management System</h1></a>
     <h2>Welcome to the Home Page</h2>
     <p>Please select one of the following options:</p>
+    {% if message %}
+    <div class="alert alert-success">
+      {{ message }}
+    </div>
+    {% endif %}
+    
     <div class="row">
       <div class="col-md-6">
         <button type="button" class="btn btn-primary btn-lg btn-block" onclick="window.location.href = 'health_check';">Health Check</button>
@@ -31,6 +37,8 @@
         <button type="button" class="btn btn-primary btn-lg btn-block" onclick="window.location.href = 'insert_record';">Insert Record</button>
         <button type="button" class="btn btn-primary btn-lg btn-block" onclick="window.location.href = 'delete_record';">Delete Record</button>
       </div>
+      <div class="col-md-6">
+        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="window.location.href = 'order';">Order</button>
     </div>
   </div>
   <!-- Bootstrap JS -->

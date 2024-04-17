@@ -4,7 +4,7 @@ import pymongo
 import pika
 
 # Connect to MongoDB
-client = pymongo.MongoClient('add your mongodb connection string here')
+client = pymongo.MongoClient('mongodb+srv://melvin:melvin123@cluster0.kmverd6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
 db = client["database"]
 collection = db["inventory"]
 
@@ -28,7 +28,7 @@ def callback(ch, method, properties, body):
     record = {
         "product_name": body['product_name'],
         "product_id": body['product_id'],
-        "units": body['units'],
+        "units": int(body['units']),
     }
     collection.insert_one(record)
     print("Record inserted into the database: ", record)
