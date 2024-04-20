@@ -1,6 +1,6 @@
 # 250_264_265_294_Microservices_communication_using_RabbitMQ 
 
-Mini Project for the Cloud Computing - UE21CS351 course.
+Mini Project for the Cloud Computing - UE21CS351B course.
 
 ## Batch Number 13
 ### Team Members
