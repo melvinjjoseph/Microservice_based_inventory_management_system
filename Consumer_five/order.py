@@ -22,8 +22,8 @@ channel.queue_declare(queue='create_order', durable=True)
 # Define a callback function to handle incoming messages
 def callback(ch, method, properties, body):
     # Initialize the counter if it does not exist
-    if db.counters.count_documents({"_id": "order_id"}) == 0:
-        db.counters.insert_one({"_id": "order_id", "seq": 0})
+    # if db.counters.count_documents({"_id": "order_id"}) == 0:
+    #     db.counters.insert_one({"_id": "order_id", "seq": 0})
     # Parse incoming message
     body = body.decode()
     body = json.loads(body)
@@ -54,7 +54,7 @@ def callback(ch, method, properties, body):
         if inventory is None:
             print("No inventory record found for product_id: ", product_id)
         else:
-            new_units = int(inventory['units']) - units
+            new_units = int(inventory['units']) - int(units)
             if new_units < 0:
                 print("Not enough units in inventory for product_id: ", product_id)
             else:

@@ -107,6 +107,9 @@ def delete_record():
     if request.method == 'POST':
         product_id = request.form['product_id']
         message = product_id
+        # Check if the product exists in the database
+        if not collection.find_one({'product_id': product_id}):
+            return render_template('delete.html', message='Product does not exist in the inventory!')
         try:
             channel.basic_publish(exchange='microservices', routing_key='delete_record', body=message)
         except pika.exceptions.UnroutableError as e:

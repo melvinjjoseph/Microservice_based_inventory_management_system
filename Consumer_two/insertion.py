@@ -28,7 +28,7 @@ def callback(ch, method, properties, body):
     record = {
         "product_name": body['product_name'],
         "product_id": body['product_id'],
-        "units": int(body['units']),
+        "units": body['units'],
     }
     collection.insert_one(record)
     print("Record inserted into the database: ", record)
