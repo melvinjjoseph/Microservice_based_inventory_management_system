@@ -4,7 +4,7 @@ import pymongo
 import pika
 
 # Connect to MongoDB
-client = pymongo.MongoClient('mongodb+srv://melvin:melvin123@cluster0.kmverd6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+client = pymongo.MongoClient('enter your mongo db connection string here')
 db = client["database"]
 collection = db["inventory"]
 

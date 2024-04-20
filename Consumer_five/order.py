@@ -5,7 +5,7 @@ import pika
 import random
 
 # Connect to MongoDB
-client = pymongo.MongoClient('mongodb+srv://melvin:melvin123@cluster0.kmverd6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+client = pymongo.MongoClient('enter your mongo db connection string here')
 db = client["database"]
 collection = db["inventory"]
 orders = db["orders"]
@@ -21,19 +21,10 @@ channel.queue_declare(queue='create_order', durable=True)
 
 # Define a callback function to handle incoming messages
 def callback(ch, method, properties, body):
-    # Initialize the counter if it does not exist
-    # if db.counters.count_documents({"_id": "order_id"}) == 0:
-    #     db.counters.insert_one({"_id": "order_id", "seq": 0})
     # Parse incoming message
     body = body.decode()
     body = json.loads(body)
-    
-    # Increment the counter and get the new value
-    # counter = db.counters.find_one_and_update(
-    #     {"_id": "order_id"},
-    #     {"$inc": {"seq": 3}},
-    #     return_document=pymongo.ReturnDocument.AFTER
-    # )
+
     order_id = random.randint(100000, 999999)
     try:
         record = {

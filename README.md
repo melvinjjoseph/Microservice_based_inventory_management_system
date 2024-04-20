@@ -24,7 +24,7 @@ git clone https://github.com/melvinjjoseph/250_264_265_294_Microservices_communi
 ```{bash}
 cd 250_264_265_294_Microservices_communication_using_RabbitMQ
 ```
-3. Add your mongodb connection string in `read_database.py` , `app.py` , `deletion.py` and `insertion.py`
+3. Add your mongodb connection string in `read_database.py` , `app.py` , `deletion.py` , `order.py` and `insertion.py`
 4. Run the following command to start the services
 ```{bash}
 docker-compose up --build
